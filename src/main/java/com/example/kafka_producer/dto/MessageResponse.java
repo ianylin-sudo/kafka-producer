@@ -10,4 +10,5 @@ public class MessageResponse {
   private int partition;
   private long offset;
   private String status;
+  private String topic;
 }

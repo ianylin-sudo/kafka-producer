@@ -1,32 +1,37 @@
 package com.example.kafka_producer.service;
 
+import com.example.kafka_producer.dto.MessageRequest;
 import com.example.kafka_producer.dto.MessageResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MessageProducerService {
-  private static final String TOPIC = "test-topic";
   private final ReactiveKafkaProducerTemplate<String, String> kafkaTemplate;
 
-  public Mono<MessageResponse> sendMessage(String key, String message) {
+  public Mono<MessageResponse> sendMessage(MessageRequest messageRequest) {
     return kafkaTemplate
-        .send(TOPIC, key, message)
+        .send(messageRequest.getTopic(), messageRequest.getKey(), messageRequest.getMessage())
         .map(
             senderResult ->
                 MessageResponse.builder()
-                    .message(message)
+                    .message(messageRequest.getMessage())
                     .partition(senderResult.recordMetadata().partition())
                     .offset(senderResult.recordMetadata().offset())
                     .status("SENT")
+                    .topic(messageRequest.getTopic())
                     .build())
         .doOnSuccess(
             response ->
-                System.out.println(
-                    "Sent message: " + message + " to partition: " + response.getPartition()))
-        .doOnError(error -> System.err.println("Error sending message: " + error.getMessage()));
+                log.info(
+                    "Sent message: {} to partition: {}",
+                    messageRequest.getMessage(),
+                    response.getPartition()))
+        .doOnError(error -> log.error("Error sending message: {}", error.getMessage()));
   }
 }

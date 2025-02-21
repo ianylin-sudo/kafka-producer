@@ -17,6 +17,6 @@ public class MessageController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<MessageResponse> sendMessage(@RequestBody MessageRequest request) {
-    return producerService.sendMessage(request.getKey(), request.getMessage());
+    return producerService.sendMessage(request);
   }
 }

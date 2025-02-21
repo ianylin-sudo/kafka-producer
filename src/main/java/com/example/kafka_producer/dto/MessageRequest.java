@@ -6,4 +6,5 @@ import lombok.Data;
 public class MessageRequest {
   private String message;
   private String key;
+  private String topic;
 }
